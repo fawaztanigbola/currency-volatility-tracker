@@ -1,5 +1,14 @@
-from fastapi import FastAPI, HTTPException
-import httpx
+import requests
+
+#  for the past 30 days
+url = 'https://api.frankfurter.app/2026-04-28..2026-05-28?from=USD'
+
+response = requests.get(url)
+data = response.json()
+
+# print(data['rates'])
+
+# obj = []
 
 class CurrencyDataPoint:
     def __init__(self, date, rate):
@@ -48,34 +57,21 @@ class CurrencyAnalyzer:
 
     def calculate_volatility(self):
         return self.calculate_variance() ** 0.5
-    
-app = FastAPI()
 
-@app.get("/")
-async def check():
-    return {"check": True}
+# Prompt user 
+target_currency = input('Input Currency Code: ')
 
-@app.get("/volatility")
-async def get_json_response(currency: str= "EUR"):
-    url = 'https://api.frankfurter.dev/v1/2026-04-28..2026-05-28?from=USD'
+analysis = CurrencyAnalyzer()
 
-    async with httpx.AsyncClient(follow_redirects=True) as client:
-        try:
-            response = await client.get(url)
-            response.raise_for_status()
-            data = response.json() 
-        except httpx.HTTPError:
-            raise HTTPException(status_code=502, detail="Failed to fetch external currency data")
-        
-    analysis = CurrencyAnalyzer()
-    try:
-        analysis.load_data(data, currency.upper())
-    except KeyError:
-        raise HTTPException(status_code=422, detail=f"Currency code '{currency}' is invalid or unavailable.")
-    
-    return {
-        "Currency": currency.upper(),
-        "total_days_analyzed": analysis.get_total_days(),
-        "volatility": round(analysis.calculate_volatility(), 6)
-    }
+analysis.load_data(data, target_currency)
 
+print('--- Analysis Of {} Currency ---'.format(target_currency))
+print('Total days analyzed: {}'.format(analysis.get_total_days()))
+print('Average rate: {:.4f}'.format(analysis.calculate_mean()))
+print('Variance: {:.6f}'.format(analysis.calculate_variance()))
+print('Final Volatility metric: {:.6f}'.format(analysis.calculate_volatility()))
+
+
+
+
+# print(obj)
