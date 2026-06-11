@@ -6,7 +6,7 @@ def count_smileys(arr):
                 count += 1
     return count
             
-
+#  This checks if the smiley face is accurate
 def check_smile(smile):
     length = len(smile)
     
