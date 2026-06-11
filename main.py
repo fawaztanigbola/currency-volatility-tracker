@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from typing import Annotated
 import httpx
 
 class CurrencyDataPoint:
@@ -56,7 +57,13 @@ async def check():
     return {"check": True}
 
 @app.get("/volatility")
-async def get_json_response(currency: str= "EUR"):
+async def get_json_response(
+    currency: Annotated[str , Query(
+        default= "EUR",
+        min_length=3, 
+        max_length=3,
+        pattern=r"^[a-zA-Z]{3}$")] 
+    ):
     url = 'https://api.frankfurter.dev/v1/2026-04-28..2026-05-28?from=USD'
 
     async with httpx.AsyncClient(follow_redirects=True) as client:
