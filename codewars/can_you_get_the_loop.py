@@ -36,6 +36,6 @@ def loop_size(node):
         while turtle != rabbit:
             count += 1
             rabbit = rabbit.next
-
+        #I don't still understand this code
         # voila
         return count
