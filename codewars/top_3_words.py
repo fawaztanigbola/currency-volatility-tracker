@@ -5,6 +5,8 @@ def top_3_words(text):
         pass
     return
 
+# I have not still gotten it.
+
 def iswrd(word):
     for chr in word:
         if not (chr.isalpha() or chr == "'"):
