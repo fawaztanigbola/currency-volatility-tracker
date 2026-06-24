@@ -5,10 +5,12 @@ def top_3_words(text):
         pass
     return
 
-# I have not still gotten it.
+# I have not still gotten it. 00000
 
 def iswrd(word):
     for chr in word:
         if not (chr.isalpha() or chr == "'"):
             return False
         return True
+
+# I dont know what to do
