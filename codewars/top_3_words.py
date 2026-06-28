@@ -18,7 +18,7 @@ class Parser(object):
     def _isWhitespace(self,char:str)->bool:  return (not self._isBlackspace(char))
 
     #Generator that produces tokens of blackspace that are not all apostrophes
-    def tokenizer(self) ->str:
+    def tokenizer(self) :
         token, consumingToken  = [], False
         for char in self.body:
             if self._isBlackspace(char):
