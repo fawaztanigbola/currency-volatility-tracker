@@ -5,15 +5,16 @@
 [![Docker](https://img.shields.io/badge/Docker-enabled-blue?style=flat&logo=docker)](https://www.docker.com/)
 [![Tests](https://img.shields.io/badge/tests-pytest-green.svg)](https://docs.pytest.org/)
 
-An asynchronous, lightweight FastAPI microservice designed to fetch historical exchange rates and calculate the statistical volatility (standard deviation) of various currencies against the US Dollar (USD). 
+An asynchronous, lightweight FastAPI microservice designed to fetch historical exchange rates and calculate the statistical volatility (standard deviation) of various world currencies against the US Dollar (USD). 
 
-This repository also contains a collection of Python solutions for various algorithmic challenges in the `codewars/` directory.
+This repository also serves as an educational monorepo, housing a collection of optimized Python solutions for various algorithmic challenges in the `codewars/` directory.
 
 ---
 
 ## Table of Contents
 
-- [Features](#features)
+- [Project Purpose & Overview](#project-purpose--overview)
+- [How Volatility is Calculated](#how-volatility-is-calculated)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
@@ -28,16 +29,50 @@ This repository also contains a collection of Python solutions for various algor
 
 ---
 
-## Features
+## Project Purpose & Overview
 
-- **Asynchronous Architecture**: Built on FastAPI and utilizing `httpx` for non-blocking external API requests.
-- **Statistical Analysis**: Custom `CurrencyAnalyzer` class that calculates:
-  - Mean exchange rate over a given period.
-  - Variance of exchange rates.
-  - Volatility (Standard Deviation) of the target currency.
-- **Robust Validation**: Strict query parameter validation ensuring currency codes conform to the ISO 4217 standard (3-letter alphabetic codes).
-- **Dockerized**: Ready for containerized deployment.
-- **Comprehensive Testing**: Unit tests implemented with `pytest`.
+The **Currency Volatility Tracker** is engineered to assess financial risk and stability metrics for foreign currencies relative to the USD. 
+
+The service integrates directly with the free and open [Frankfurter API](https://www.frankfurter.app/) (utilizing the public `.dev` instance) to pull historical daily exchange rates over a predefined time-window. By processing this dataset asynchronously, the microservice computes mathematical variance and standard deviation on the fly, outputting a precise volatility score.
+
+### Operational Flow
+
+```
+   ┌─────────────┐             ┌─────────────┐             ┌─────────────────────┐
+   │             │             │             │             │                     │
+   │   Client    │ ──(Request)─►   FastAPI   │ ──(Request)─►  Frankfurter API    │
+   │             │ ◄──(JSON)───│   Service   │ ◄──(Rates)──│ (Historical Rates)  │
+   └─────────────┘             └──────┬──────┘             └─────────────────────┘
+                                      │
+                         [ Parses & Loads Datapoints ]
+                                      │
+                                      ▼
+                        ┌───────────────────────────┐
+                        │     CurrencyAnalyzer      │
+                        │ ───────────────────────── │
+                        │  1. Compute Mean          │
+                        │  2. Compute Variance      │
+                        │  3. Compute Volatility    │
+                        └───────────────────────────┘
+```
+
+---
+
+## How Volatility is Calculated
+
+The volatility score represents the **Population Standard Deviation ($\sigma$)** of the exchange rates over the analyzed period.
+
+1. **Mean ($\mu$):**
+   $$\mu = \frac{1}{N} \sum_{i=1}^{N} x_i$$
+   *Where $x_i$ is the exchange rate for day $i$, and $N$ is the total number of days analyzed.*
+
+2. **Variance ($\sigma^2$):**
+   $$\sigma^2 = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu)^2$$
+
+3. **Volatility / Standard Deviation ($\sigma$):**
+   $$\sigma = \sqrt{\sigma^2}$$
+
+This calculation is implemented natively in Python within the custom `CurrencyAnalyzer` class inside `main.py` without requiring external mathematical heavy-lifters (like `numpy` or `pandas`), keeping the app lightweight and lightning-fast.
 
 ---
 
@@ -45,28 +80,42 @@ This repository also contains a collection of Python solutions for various algor
 
 | Technology | Purpose |
 | :--- | :--- |
-| **Python 3.10+** | Core programming language |
-| **FastAPI** | High-performance web framework for building APIs |
-| **Uvicorn** | ASGI web server implementation |
-| **HTTPX** | Next-generation, fully async HTTP client |
-| **Pytest** | Testing framework |
-| **Docker** | Containerization and deployment |
+| **Python 3.10+** | Base programming language |
+| **FastAPI** | High-performance, async web framework for building APIs |
+| **Uvicorn** | High-speed, ASGI web server implementation |
+| **HTTPX** | Next-generation, fully asynchronous HTTP client |
+| **Pytest** | Testing framework for unit and integration validation |
+| **Docker** | Containerization environment |
 
 ---
 
 ## Project Structure
 
 ```bash
-├── codewars/                 # Collection of Codewars algorithmic solutions
+├── codewars/                           # Algorithmic code challenges and solutions
 │   ├── build_a_pile_of_cubes.py
+│   ├── calculating_with_functions.py
+│   ├── camel_case.py
+│   ├── can_you_get_the_loop.py
+│   ├── count_the_smiley_face.py
+│   ├── descending_order.py
+│   ├── extract_domain_name.py
+│   ├── linked_lists.py
+│   ├── not_very_secure.py
+│   ├── pete_the_baker.py
+│   ├── printer_errors.py
 │   ├── rot13.py
-│   └── ... (other solutions)
-├── .dockerignore             # Docker ignore rules
-├── Dockerfile                # Docker deployment configuration
-├── main.py                   # Main FastAPI application & business logic
-├── main01.py                 # Alternative/development entrypoint
-├── requirements.txt          # Project dependencies
-└── test_main.py              # Pytest test suite
+│   ├── simple_pig_latin.py
+│   ├── Stop_gninnipS_My_sdroW!.py
+│   ├── top_3_words.py
+│   ├── two_sum.py
+│   └── who_likes_it.py
+├── .dockerignore                       # Exclusions for Docker builds
+├── Dockerfile                          # Build instructions for container engine
+├── main.py                             # Main FastAPI app & CurrencyAnalyzer business logic
+├── main01.py                           # Alternative/development playground scratchpad
+├── requirements.txt                    # Project package dependencies
+└── test_main.py                        # Automated API and unit test suite
 ```
 
 ---
@@ -75,8 +124,8 @@ This repository also contains a collection of Python solutions for various algor
 
 ### Prerequisites
 
-- **Python 3.10+** installed locally, OR
-- **Docker** installed locally.
+- **Python 3.10** or higher installed on your machine.
+- **Docker** (Optional, for containerized deployments).
 
 ### Local Installation
 
@@ -86,50 +135,61 @@ This repository also contains a collection of Python solutions for various algor
    cd currency-volatility-tracker
    ```
 
-2. **Create and activate a virtual environment:**
+2. **Set up a Python Virtual Environment:**
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # On Windows use: venv\Scripts\activate
    ```
 
-3. **Install dependencies:**
+3. **Install Dependencies:**
    ```bash
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
 ### Running the Application
 
-Start the Uvicorn development server:
+Launch the ASGI server using Uvicorn:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-The server will start running at `http://127.0.0.1:8000`. You can access the interactive Swagger API documentation at `http://127.0.0.1:8000/docs`.
+- **API Endpoint:** `http://127.0.0.1:8000`
+- **Interactive Swagger Docs:** `http://127.0.0.1:8000/docs`
+- **Alternative ReDoc UI:** `http://127.0.0.1:8000/redoc`
 
 ### Running with Docker
 
-1. **Build the Docker image:**
+You can package and run the application in a fully isolated container:
+
+1. **Build the Docker Image:**
    ```bash
    docker build -t currency-volatility-tracker .
    ```
 
-2. **Run the container:**
+2. **Run the Container:**
    ```bash
-   docker run -p 8000:8000 currency-volatility-tracker
+   docker run -d -p 8000:8000 --name currency-tracker-app currency-volatility-tracker
    ```
 
-The application will be accessible at `http://localhost:8000`.
+The service will now be accessible at `http://localhost:8000`.
 
 ---
 
 ## API Reference
 
 ### 1. Health Check
-Returns the status of the service.
 
-* **Endpoint:** `GET /`
-* **Response:**
+Verifies that the microservice is active and healthy.
+
+- **Endpoint:** `GET /`
+- **Headers:** None required
+- **Curl Example:**
+  ```bash
+  curl -s http://127.0.0.1:8000/
+  ```
+- **Response (200 OK):**
   ```json
   {
     "check": true
@@ -137,50 +197,69 @@ Returns the status of the service.
   ```
 
 ### 2. Get Currency Volatility
-Fetches historical exchange rates against the USD for a specified currency and calculates its volatility over the analyzed timeframe.
 
-* **Endpoint:** `GET /volatility`
-* **Query Parameters:**
-  * `currency` (string, optional): The 3-letter ISO currency code to analyze. Default is `EUR`. Must match pattern `^[a-zA-Z]{3}$`.
-* **Example Request:**
+Calculates standard deviation of exchange rates against USD over a designated historical time frame.
+
+- **Endpoint:** `GET /volatility`
+- **Query Parameters:**
+  - `currency` *(string, optional)*: Case-insensitive, 3-letter ISO 4217 code of the target currency. Default is `EUR`. Must conform to the pattern `^[a-zA-Z]{3}$`.
+- **Curl Example:**
   ```bash
-  curl -X 'GET' 'http://127.0.0.1:8000/volatility?currency=EUR' -H 'accept: application/json'
+  curl -s "http://127.0.0.1:8000/volatility?currency=GBP"
   ```
-* **Example Response (200 OK):**
+- **Response (200 OK):**
   ```json
   {
-    "Currency": "EUR",
+    "Currency": "GBP",
     "total_days_analyzed": 22,
-    "volatility": 0.004123
+    "volatility": 0.003924
   }
   ```
-* **Error Responses:**
-  * `422 Unprocessable Entity`: Invalid currency code format or unsupported currency.
-  * `502 Bad Gateway`: External Frankfurter API is unreachable or returned an error.
+
+#### Error Handling Responses:
+
+* **422 Unprocessable Entity** (Invalid format / Unsupported currency):
+  ```json
+  {
+    "detail": "Currency code 'XYZ' is invalid or unavailable."
+  }
+  ```
+* **502 Bad Gateway** (Frankfurter API connection failure):
+  ```json
+  {
+    "detail": "Failed to fetch external currency data"
+  }
+  ```
 
 ---
 
 ## Running Tests
 
-The test suite validates both the API endpoints and the mathematical calculations inside the `CurrencyAnalyzer` class.
+Automated unit and integration tests are managed using `pytest`. The test suite validates the endpoints, request sanitization rules, and the mathematical correctness of the `CurrencyAnalyzer`'s calculations.
 
-To run the tests, execute:
+To run the test suite:
 
 ```bash
-pytest -v
+pytest -v --tb=short
 ```
 
 ---
 
 ## Codewars Solutions
 
-The `codewars/` directory contains clean, well-structured Python solutions to various popular Codewars challenges. These include:
-- **String Manipulation**: `simple_pig_latin.py`, `camel_case.py`, `Stop_gninnipS_My_sdroW!.py`
-- **Algorithms & Math**: `build_a_pile_of_cubes.py`, `two_sum.py`, `descending_order.py`
-- **Data Structures**: `linked_lists.py`
-- **Cryptography**: `rot13.py`
+The `codewars/` directory hosts clean, optimized, and thoroughly thought-out solutions to popular programming exercises on the Codewars platform.
 
-These scripts can be run individually using standard Python:
+### Quick Breakdown of Solutions
+
+| Domain | Solution Files |
+| :--- | :--- |
+| **Data Structures** | `linked_lists.py` |
+| **Algorithms / Arithmetic** | `build_a_pile_of_cubes.py`, `two_sum.py`, `descending_order.py`, `pete_the_baker.py` |
+| **String Manipulation** | `simple_pig_latin.py`, `camel_case.py`, `Stop_gninnipS_My_sdroW!.py`, `top_3_words.py` |
+| **Security & RegEx** | `not_very_secure.py`, `extract_domain_name.py`, `count_the_smiley_face.py` |
+| **Cryptography** | `rot13.py` |
+
+You can test any individual solution directly via standard Python:
 ```bash
 python codewars/rot13.py
 ```
@@ -189,4 +268,4 @@ python codewars/rot13.py
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details (or feel free to use this code for educational and portfolio purposes).
+This project is licensed under the MIT License. Feel free to use and adapt this code for educational, personal, or corporate projects.
